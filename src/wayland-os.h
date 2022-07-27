@@ -33,6 +33,9 @@ int
 wl_os_socket_cloexec(int domain, int type, int protocol);
 
 int
+wl_os_socketpair_cloexec(int domain, int type, int protocol, int sv[2]);
+
+int
 wl_os_socket_peercred(int sockfd, uid_t *uid, gid_t *gid, pid_t *pid);
 
 int

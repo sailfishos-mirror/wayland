@@ -166,7 +166,11 @@ do_os_wrappers_socket_cloexec(int n)
 	 * Must have 2 calls if falling back, but must also allow
 	 * falling back without a forced fallback.
 	 */
+#ifdef SOCK_CLOEXEC
 	assert(wrapped_calls_socket > n);
+#else
+	assert(wrapped_calls_socket == 1);
+#endif
 
 	exec_fd_leak_check(nr_fds);
 }
@@ -240,8 +244,8 @@ struct marshal_data {
 static void
 setup_marshal_data(struct marshal_data *data)
 {
-	assert(socketpair(AF_UNIX,
-			  SOCK_STREAM | SOCK_CLOEXEC, 0, data->s) == 0);
+	assert(wl_os_socketpair_cloexec(AF_UNIX,
+			  SOCK_STREAM, 0, data->s) == 0);
 
 	data->read_connection = wl_connection_create(data->s[0],
 						     WL_BUFFER_DEFAULT_MAX_SIZE);

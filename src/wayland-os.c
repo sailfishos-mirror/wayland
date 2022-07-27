@@ -87,6 +87,34 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 	return set_cloexec_or_close(fd);
 }
 
+int
+wl_os_socketpair_cloexec(int domain, int type, int protocol, int sv[2])
+{
+	int retval;
+
+#ifdef SOCK_CLOEXEC
+	retval = socketpair(domain, type | SOCK_CLOEXEC, protocol, sv);
+	if (retval >= 0)
+		return retval;
+	if (errno != EINVAL)
+		return -1;
+#endif
+
+	retval = socketpair(domain, type, protocol, sv);
+	if (retval < 0)
+		return retval;
+
+	sv[0] = set_cloexec_or_close(sv[0]);
+	sv[1] = set_cloexec_or_close(sv[1]);
+	if (sv[0] == -1 || sv[1] == -1) {
+		close(sv[0]);
+		close(sv[1]);
+		return -1;
+	}
+
+	return 0;
+}
+
 #if defined(LOCAL_PEERCRED)
 int
 wl_os_socket_peercred(int sockfd, uid_t *uid, gid_t *gid, pid_t *pid)
