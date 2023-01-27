@@ -61,10 +61,12 @@ socket_wrapper(int domain, int type, int protocol)
 {
 	wrapped_calls_socket++;
 
+#ifdef SOCK_CLOEXEC
 	if (fall_back && (type & SOCK_CLOEXEC)) {
 		errno = EINVAL;
 		return -1;
 	}
+#endif
 
 	return socket(domain, type, protocol);
 }
@@ -78,12 +80,16 @@ fcntl_wrapper(int fd, int cmd, ...)
 
 	wrapped_calls_fcntl++;
 
+#ifdef F_DUPFD_CLOEXEC
 	if (fall_back && (cmd == F_DUPFD_CLOEXEC)) {
 		errno = EINVAL;
 		return -1;
 	}
+#endif
 	switch (cmd) {
+#ifdef F_DUPFD_CLOEXEC
 	case F_DUPFD_CLOEXEC:
+#endif
 	case F_DUPFD:
 	case F_SETFD:
 		va_start(ap, cmd);
@@ -110,10 +116,12 @@ recvmsg_wrapper(int sockfd, struct msghdr *msg, int flags)
 {
 	wrapped_calls_recvmsg++;
 
+#ifdef MSG_CMSG_CLOEXEC
 	if (fall_back && (flags & MSG_CMSG_CLOEXEC)) {
 		errno = EINVAL;
 		return -1;
 	}
+#endif
 
 	return recvmsg(sockfd, msg, flags);
 }
@@ -323,9 +331,10 @@ do_os_wrappers_recvmsg_cloexec(int n)
 	struct marshal_data data;
 
 	data.nr_fds_begin = count_open_fds();
-#if HAVE_BROKEN_MSG_CMSG_CLOEXEC
+#if HAVE_BROKEN_MSG_CMSG_CLOEXEC || !defined(MSG_CMSG_CLOEXEC)
 	/* We call the fallback directly on FreeBSD versions with a broken
-	 * MSG_CMSG_CLOEXEC, so we don't call the local recvmsg() wrapper. */
+	 * MSG_CMSG_CLOEXEC or platforms without MSG_CMSG_CLOEXEC, so we
+	 * don't call the local recvmsg() wrapper. */
 	data.wrapped_calls = 0;
 #else
 	data.wrapped_calls = n;

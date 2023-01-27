@@ -75,11 +75,13 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 {
 	int fd;
 
+#ifdef SOCK_CLOEXEC
 	fd = wl_socket(domain, type | SOCK_CLOEXEC, protocol);
 	if (fd >= 0)
 		return fd;
 	if (errno != EINVAL)
 		return -1;
+#endif
 
 	fd = wl_socket(domain, type, protocol);
 	return set_cloexec_or_close(fd);
@@ -134,11 +136,13 @@ wl_os_dupfd_cloexec(int fd, int minfd)
 {
 	int newfd;
 
+#ifdef F_DUPFD_CLOEXEC
 	newfd = wl_fcntl(fd, F_DUPFD_CLOEXEC, minfd);
 	if (newfd >= 0)
 		return newfd;
 	if (errno != EINVAL)
 		return -1;
+#endif
 
 	newfd = wl_fcntl(fd, F_DUPFD, minfd);
 	return set_cloexec_or_close(newfd);
@@ -186,7 +190,7 @@ wl_os_recvmsg_cloexec(int sockfd, struct msghdr *msg, int flags)
 	 * fix (https://cgit.freebsd.org/src/commit/?id=6ceacebdf52211).
 	 */
 #pragma message("Using fallback directly since MSG_CMSG_CLOEXEC is broken.")
-#else
+#elif defined(MSG_CMSG_CLOEXEC)
 	ssize_t len;
 
 	len = wl_recvmsg(sockfd, msg, flags | MSG_CMSG_CLOEXEC);
