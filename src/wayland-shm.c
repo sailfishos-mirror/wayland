@@ -357,8 +357,10 @@ shm_create_pool(struct wl_client *client, struct wl_resource *resource,
 		uint32_t id, int fd, int32_t size)
 {
 	struct wl_shm_pool *pool;
+#ifdef HAVE_MEMFD_CREATE
 	struct stat statbuf;
 	int seals;
+#endif
 	int prot;
 	int flags;
 	uint32_t version;
