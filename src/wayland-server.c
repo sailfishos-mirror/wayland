@@ -1358,6 +1358,7 @@ wl_socket_destroy(struct wl_socket *s)
 	if (s->fd_lock >= 0)
 		close(s->fd_lock);
 
+	wl_list_remove(&s->link);
 	free(s);
 }
 
@@ -1372,6 +1373,7 @@ wl_socket_alloc(void)
 
 	s->fd = -1;
 	s->fd_lock = -1;
+	wl_list_init(&s->link);
 
 	return s;
 }
@@ -2040,7 +2042,8 @@ wl_display_add_socket_auto(struct wl_display *display)
  * with both bind() and listen() already called.
  *
  * On success, the socket fd ownership is transferred to libwayland:
- * libwayland will close the socket when the display is destroyed.
+ * libwayland will close the socket when the display is destroyed or when
+ * wl_display_remove_socket_fd() is called.
  *
  * \memberof wl_display
  */
@@ -2073,6 +2076,37 @@ wl_display_add_socket_fd(struct wl_display *display, int sock_fd)
 
 	wl_list_insert(display->socket_list.prev, &s->link);
 
+	return 0;
+}
+
+/** Remove a socket fd from the Wayland display.
+ *
+ * \param display Wayland display from which the socket should be removed.
+ * \param sock_fd The socket file descriptor to be removed.
+ * \return 0 if success. -1 if failed.
+ *
+ * Remove a socket fd previously added via wl_display_add_socket_fd().
+ *
+ * \memberof wl_display
+ * \since 1.25.90
+ */
+WL_EXPORT int
+wl_display_remove_socket_fd(struct wl_display *display, int sock_fd)
+{
+	struct wl_socket *s;
+	bool found;
+
+	found = false;
+	wl_list_for_each(s, &display->socket_list, link) {
+		if (s->fd == sock_fd) {
+			found = true;
+			break;
+		}
+	}
+	if (!found)
+		return -1;
+
+	wl_socket_destroy(s);
 	return 0;
 }
 
