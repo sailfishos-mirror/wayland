@@ -397,6 +397,29 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		wl_connection_copy(connection, p, sizeof p);
 		opcode = p[1] & 0xffff;
 		size = p[1] >> 16;
+
+		/*
+		 * If the message is larger than the maximum size of the
+		 * connection buffer, the connection buffer will fill to
+		 * its max size and stay there, with no message ever
+		 * successfully being processed.  Since libwayland-server
+		 * uses level-triggered epoll, it will cause the server to
+		 * enter a loop that consumes CPU.  To avoid this,
+		 * immediately disconnect the client with a protocol
+		 * error.  Since the maximum size of a message should not
+		 * depend on the buffer size chosen by the compositor,
+		 * always compare the message size against the
+		 * limit enforced by libwayland 1.22 and below (4096),
+		 * rather than the actual value the compositor chose.
+		 */
+		if (size > WL_MAX_MESSAGE_SIZE) {
+			wl_resource_post_error(client->display_resource,
+			                       WL_DISPLAY_ERROR_INVALID_METHOD,
+			                       "message length %u exceeds %d",
+			                       size, WL_MAX_MESSAGE_SIZE);
+			break;
+		}
+
 		if (len < size)
 			break;
 
