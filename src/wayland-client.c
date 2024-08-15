@@ -1578,6 +1578,28 @@ queue_event(struct wl_display *display, int len)
 	id = p[0];
 	opcode = p[1] & 0xffff;
 	size = p[1] >> 16;
+
+	/*
+	 * If the message is larger than the maximum size of the
+	 * connection buffer, the connection buffer will fill to
+	 * its max size and stay there, with no message ever
+	 * successfully being processed.  If the user of
+	 * libwayland-client uses a level-triggered event loop,
+	 * this will cause the client to enter a loop that
+	 * consumes CPU.  To avoid this, immediately drop the
+	 * connection.  Since the maximum size of a message should
+	 * not depend on the max buffer size chosen by the client,
+	 * always compare the message size against the
+	 * limit enforced by libwayland 1.22 and below (4096),
+	 * rather than the actual value the client chose.
+	 */
+	if (size > WL_MAX_MESSAGE_SIZE) {
+		wl_log("Message length %u exceeds limit %d\n",
+		       size, WL_MAX_MESSAGE_SIZE);
+		errno = E2BIG;
+		return -1;
+	}
+
 	if (len < size)
 		return 0;
 
