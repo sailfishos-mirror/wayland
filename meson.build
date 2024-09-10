@@ -46,6 +46,7 @@ have_funcs = [
 	'memfd_create',
 	'mremap',
 	'strndup',
+	'gettid',
 ]
 foreach f: have_funcs
 	config_h.set('HAVE_' + f.underscorify().to_upper(), cc.has_function(f))

@@ -26,6 +26,8 @@
 
 #define _GNU_SOURCE
 
+#include "../config.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <stdint.h>
@@ -1538,6 +1540,9 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 		 int send, int discarded, uint32_t (*n_parse)(union wl_argument *arg),
 		 const char *queue_name, int color)
 {
+#if defined(HAVE_GETTID)
+	static int include_tid = -1;
+#endif // defined(HAVE_GETTID)
 	int i;
 	struct argument_details arg;
 	const char *signature = closure->message->signature;
@@ -1557,6 +1562,18 @@ wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 	fprintf(f, "%s[%7u.%03u] ",
 		color ? WL_DEBUG_COLOR_GREEN : "",
 		time / 1000, time % 1000);
+
+#if defined(HAVE_GETTID)
+	if (include_tid < 0) {
+		include_tid = wl_check_env_token(getenv("WAYLAND_DEBUG"), "thread_id");
+	}
+
+	if (include_tid) {
+		fprintf(f, "%sTID#%d ",
+			color ? WL_DEBUG_COLOR_CYAN : "",
+			(int) gettid());
+	}
+#endif
 
 	if (queue_name) {
 		fprintf(f, "%s{%s} ",
