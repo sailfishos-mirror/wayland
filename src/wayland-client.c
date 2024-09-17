@@ -1236,7 +1236,7 @@ wl_display_connect_to_fd(int fd)
 	no_color = getenv("NO_COLOR");
 	force_color = getenv("FORCE_COLOR");
 	debug = getenv("WAYLAND_DEBUG");
-	if (debug && (strstr(debug, "client") || strstr(debug, "1"))) {
+	if (debug && (wl_check_env_token(debug, "client") || wl_check_env_token(debug, "1"))) {
 		debug_client = 1;
 		if (isatty(fileno(stderr)))
 			debug_color = 1;

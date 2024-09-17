@@ -1198,7 +1198,7 @@ wl_display_create(void)
 	no_color = getenv("NO_COLOR");
 	force_color = getenv("FORCE_COLOR");
 	debug = getenv("WAYLAND_DEBUG");
-	if (debug && (strstr(debug, "server") || strstr(debug, "1"))) {
+	if (debug && (wl_check_env_token(debug, "server") || wl_check_env_token(debug, "1"))) {
 		debug_server = 1;
 		if (isatty(fileno(stderr)))
 			debug_color = 1;

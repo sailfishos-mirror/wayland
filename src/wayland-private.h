@@ -237,6 +237,9 @@ wl_closure_send(struct wl_closure *closure, struct wl_connection *connection);
 int
 wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection);
 
+bool
+wl_check_env_token(const char *env, const char *token);
+
 void
 wl_closure_print(struct wl_closure *closure,
 		 struct wl_object *target, int send, int discarded,

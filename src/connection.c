@@ -1491,6 +1491,48 @@ wl_closure_queue(struct wl_closure *closure, struct wl_connection *connection)
 	return result;
 }
 
+bool
+wl_check_env_token(const char *env, const char *token)
+{
+	const char *ptr = env;
+	size_t token_len;
+
+	if (env == NULL)
+		return false;
+
+	token_len = strlen(token);
+
+	// Scan the string for comma-separated tokens and look for a match.
+	while (true) {
+		const char *end;
+		size_t len;
+
+		// Skip over any leading separators.
+		while (*ptr == ',')
+			ptr++;
+
+		if (*ptr == '\x00')
+			return false;
+
+		end = strchr(ptr + 1, ',');
+
+		// If there isn't another separarator, then the rest of the string
+		// is one token.
+		if (end == NULL)
+			return (strcmp(ptr, token) == 0);
+
+		len = end - ptr;
+		if (len == token_len && memcmp(ptr, token, len) == 0) {
+			return true;
+		}
+
+		// Skip to the next token.
+		ptr += len;
+	}
+
+	return false;
+}
+
 void
 wl_closure_print(struct wl_closure *closure, struct wl_object *target,
 		 int send, int discarded, uint32_t (*n_parse)(union wl_argument *arg),
