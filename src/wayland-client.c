@@ -1882,6 +1882,34 @@ err:
 	return -1;
 }
 
+
+static int
+dispatch_queue_single(struct wl_display *display, struct wl_event_queue *queue)
+{
+	if (display->last_error)
+		goto err;
+
+	while (!wl_list_empty(&display->display_queue.event_list)) {
+		dispatch_event(display, &display->display_queue);
+		if (display->last_error)
+			goto err;
+	}
+
+	if (!wl_list_empty(&queue->event_list)) {
+		dispatch_event(display, queue);
+		if (display->last_error)
+			goto err;
+		return 1;
+	} else {
+		return 0;
+	}
+
+err:
+	errno = display->last_error;
+
+	return -1;
+}
+
 /** Prepare to read events from the display's file descriptor to a queue
  *
  * \param display The display context object
@@ -2212,6 +2240,34 @@ wl_display_dispatch_queue_pending(struct wl_display *display,
 	return ret;
 }
 
+/** Dispatch at most one pending event in an event queue
+ *
+ * \param display The display context object
+ * \param queue The event queue to dispatch
+ * \return The number of dispatched events (0 or 1) on success or -1 on failure
+ *
+ * Dispatch at most one pending event for objects assigned to the given
+ * event queue. On failure -1 is returned and errno set appropriately.
+ * If there are no events queued, this function returns immediately.
+ *
+ * \memberof wl_display
+ * \since 1.25.0
+ */
+WL_EXPORT int
+wl_display_dispatch_queue_pending_single(struct wl_display *display,
+					 struct wl_event_queue *queue)
+{
+	int ret;
+
+	pthread_mutex_lock(&display->mutex);
+
+	ret = dispatch_queue_single(display, queue);
+
+	pthread_mutex_unlock(&display->mutex);
+
+	return ret;
+}
+
 /** Process incoming events
  *
  * \param display The display context object
@@ -2270,6 +2326,25 @@ wl_display_dispatch_pending(struct wl_display *display)
 {
 	return wl_display_dispatch_queue_pending(display,
 						 &display->default_queue);
+}
+
+/** Dispatch at most one pending event in the default event queue.
+ *
+ * \param display The display context object
+ * \return The number of dispatched events (0 or 1) on success or -1 on failure
+ *
+ * Dispatch at most one pending event for objects assigned to the default
+ * event queue. On failure -1 is returned and errno set appropriately.
+ * If there are no events queued, this function returns immediately.
+ *
+ * \memberof wl_display
+ * \since 1.25.0
+ */
+WL_EXPORT int
+wl_display_dispatch_pending_single(struct wl_display *display)
+{
+	return wl_display_dispatch_queue_pending_single(display,
+			                             &display->default_queue);
 }
 
 /** Retrieve the last error that occurred on a display
