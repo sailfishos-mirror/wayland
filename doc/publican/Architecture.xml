@@ -280,65 +280,113 @@
     </para>
   </section>
   <section id="sect-Wayland-Architecture-wayland_hw_enabling">
-    <title>Hardware Enabling for Wayland</title>
+    <title>Accelerated GPU Buffer Exchange</title>
     <para>
-      Typically, hardware enabling includes modesetting/display
-      and EGL/GLES2. On top of that Wayland needs a way to share
-      buffers efficiently between processes. There are two sides
-      to that, the client side and the server side.
+      Clients
+      <ulink url="https://docs.kernel.org/userspace-api/dma-buf-alloc-exchange.html">exchange</ulink>
+      GPU buffers with the compositor as dma-buf file descriptors, which are universal handles
+      that are independent of any particular rendering API or memory allocator. The
+      <ulink url="https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/stable/linux-dmabuf/linux-dmabuf-v1.xml">linux-dmabuf-v1</ulink>
+      protocol is used to turn one or more dma-buf FDs into a
+      <link linkend="protocol-spec-wl_buffer">wl_buffer</link>.
     </para>
     <para>
-      On the client side we've defined a Wayland EGL platform. In
-      the EGL model, that consists of the native types
-      (EGLNativeDisplayType, EGLNativeWindowType and
-      EGLNativePixmapType) and a way to create those types. In
-      other words, it's the glue code that binds the EGL stack and
-      its buffer sharing mechanism to the generic Wayland API. The
-      EGL stack is expected to provide an implementation of the
-      Wayland EGL platform. The full API is in the wayland-egl.h
-      header. The open source implementation in the mesa EGL stack
-      is in wayland-egl.c and platform_wayland.c.
+      If the client uses the
+      <ulink url="https://docs.vulkan.org/spec/latest/chapters/VK_KHR_surface/wsi.html">Vulkan</ulink>
+      or
+      <ulink url="https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_platform_wayland.txt">EGL</ulink>
+      (via
+      <ulink url="https://gitlab.freedesktop.org/wayland/wayland/-/tree/main/egl">wayland-egl</ulink>)
+      window-system integration
+      (WSI), this is done transparently by the WSI.
     </para>
     <para>
-      Under the hood, the EGL stack is expected to define a
-      vendor-specific protocol extension that lets the client side
-      EGL stack communicate buffer details with the compositor in
-      order to share buffers. The point of the wayland-egl.h API
-      is to abstract that away and just let the client create an
-      EGLSurface for a Wayland surface and start rendering. The
-      open source stack uses the drm Wayland extension, which lets
-      the client discover the drm device to use and authenticate
-      and then share drm (GEM) buffers with the compositor.
+      Clients can alternatively allocate and import dma-bufs themselves
+      using the GBM library, Vulkan, udmabuf, or dma-buf heaps.
+    </para>
+    <itemizedlist>
+      <listitem>
+        <para>
+          Using GBM, the client can allocate a gbm_bo and export one or more
+          dma-buf FDs from it.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          Using Vulkan, the client can create a VkDeviceMemory object and use
+          <ulink url="https://docs.vulkan.org/refpages/latest/refpages/source/VK_EXT_external_memory_dma_buf.html">VK_EXT_external_memory_dma_buf</ulink>
+          and
+          <ulink url="https://docs.vulkan.org/refpages/latest/refpages/source/VK_EXT_image_drm_format_modifier.html">VK_EXT_image_drm_format_modifier</ulink>
+          to export a dma-buf FD from it.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <ulink url="https://lwn.net/Articles/749206/">udmabuf</ulink>
+          can be used to create dma-buf FDs from linear host memory.
+        </para>
+      </listitem>
+      <listitem>
+        <para>
+          <ulink url="https://docs.kernel.org/userspace-api/dma-buf-heaps.html">Dma-buf heaps</ulink>
+          can be used by privileged applications to create dma-buf FDs on embedded
+          devices.
+        </para>
+      </listitem>
+    </itemizedlist>
+    <para>
+      Compositors use
+      <ulink url="https://docs.vulkan.org/refpages/latest/refpages/source/VK_EXT_external_memory_dma_buf.html">VK_EXT_external_memory_dma_buf</ulink>
+      and
+      <ulink url="https://docs.vulkan.org/refpages/latest/refpages/source/VK_EXT_image_drm_format_modifier.html">VK_EXT_image_drm_format_modifier</ulink>
+      or
+      <ulink url="https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_image_dma_buf_import.txt">EGL_EXT_image_dma_buf_import</ulink>
+      and
+      <ulink url="https://registry.khronos.org/EGL/extensions/EXT/EGL_EXT_image_dma_buf_import_modifiers.txt">EGL_EXT_image_dma_buf_import_modifiers</ulink>
+      to import the dma-bufs provided by the client into their own Vulkan or
+      EGL renderers.
     </para>
     <para>
-      The server side of Wayland is the compositor and core UX for
-      the vertical, typically integrating task switcher, app
-      launcher, lock screen in one monolithic application. The
-      server runs on top of a modesetting API (kernel modesetting,
-      OpenWF Display or similar) and composites the final UI using
-      a mix of EGL/GLES2 compositor and hardware overlays if
-      available. Enabling modesetting, EGL/GLES2 and overlays is
-      something that should be part of standard hardware bringup.
-      The extra requirement for Wayland enabling is the
-      EGL_WL_bind_wayland_display extension that lets the
-      compositor create an EGLImage from a generic Wayland shared
-      buffer. It's similar to the EGL_KHR_image_pixmap extension
-      to create an EGLImage from an X pixmap.
+      Clients do not need to wait for the GPU to finish rendering before submitting
+      dma-bufs to the compositor. Clients can use the
+      <ulink url="https://gitlab.freedesktop.org/wayland/wayland-protocols/-/blob/main/staging/linux-drm-syncobj/linux-drm-syncobj-v1.xml">linux-drm-syncobj-v1</ulink>
+      protocol to exchange DRM synchronization objects with the compositor. These objects
+      are used to asynchronously signal ownership transfer of buffers from clients to the
+      compositor and vice versa. The WSIs do this transparently.
     </para>
     <para>
-      The extension has a setup step where you have to bind the
-      EGL display to a Wayland display. Then as the compositor
-      receives generic Wayland buffers from the clients (typically
-      when the client calls eglSwapBuffers), it will be able to
-      pass the struct wl_buffer pointer to eglCreateImageKHR as
-      the EGLClientBuffer argument and with EGL_WAYLAND_BUFFER_WL
-      as the target. This will create an EGLImage, which can then
-      be used by the compositor as a texture or passed to the
-      modesetting code to use as an overlay plane. Again, this is
-      implemented by the vendor specific protocol extension, which
-      on the server side will receive the driver specific details
-      about the shared buffer and turn that into an EGL image when
-      the user calls eglCreateImageKHR.
+      If the linux-drm-syncobj-v1 protocol is not supported by the compositor, clients
+      and compositors can use the
+      <ulink url="https://docs.kernel.org/driver-api/dma-buf.html#c.dma_buf_export_sync_file">DMA_BUF_IOCTL_EXPORT_SYNC_FILE</ulink>
+      and
+      <ulink url="https://docs.kernel.org/driver-api/dma-buf.html#c.dma_buf_import_sync_file">DMA_BUF_IOCTL_IMPORT_SYNC_FILE</ulink>
+      ioctls to access and create implicit synchronization barriers.
+    </para>
+  </section>
+  <section id="sect-Wayland-Architecture-kms">
+    <title>Display Programming</title>
+    <para>
+      Compositors enumerate DRM KMS devices using
+      <ulink url="https://en.wikipedia.org/wiki/Udev">udev</ulink>.
+      Udev also notifies compositors of KMS device and display hotplug events.
+    </para>
+    <para>
+      Access to DRM KMS device ioctls is privileged. Since compositors usually run as
+      unprivileged applications, they typically gain access to a privileged file
+      descriptor using the
+      <ulink url="https://www.freedesktop.org/software/systemd/man/latest/org.freedesktop.login1.html#Session%20Objects">TakeDevice</ulink>
+      method provided by logind.
+    </para>
+    <para>
+      Using the file descriptor, compositors use KMS
+      <ulink url="https://docs.kernel.org/gpu/drm-kms.html">ioctls</ulink>
+      to enumerate the available displays.
+    </para>
+    <para>
+      Compositors use
+      <ulink url="https://docs.kernel.org/gpu/drm-kms.html#atomic-mode-setting">atomic mode setting</ulink>
+      to change the buffer shown by the display, to change the display's resolution, to
+      enable or disable HDR, and so on.
     </para>
   </section>
 </chapter>

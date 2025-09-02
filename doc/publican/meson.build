@@ -98,6 +98,7 @@ custom_target(
 	'Wayland-docbook-html',
 	command: [
 		xmlto,
+		'--skip-validation',
 		'--stringparam', 'chunker.output.encoding=UTF-8',
 		'--stringparam', 'chunk.section.depth=0',
 		'--stringparam', 'toc.section.depth=1',
