@@ -499,7 +499,10 @@ proxy_create(struct wl_proxy *factory, const struct wl_interface *interface,
 		return NULL;
 	}
 
-	wl_list_insert(&proxy->queue->proxy_list, &proxy->queue_link);
+	if (proxy->queue != NULL)
+		wl_list_insert(&proxy->queue->proxy_list, &proxy->queue_link);
+	else
+		wl_list_init(&proxy->queue_link);
 
 	return proxy;
 }
@@ -560,7 +563,10 @@ wl_proxy_create_for_id(struct wl_proxy *factory,
 		return NULL;
 	}
 
-	wl_list_insert(&proxy->queue->proxy_list, &proxy->queue_link);
+	if (proxy->queue != NULL)
+		wl_list_insert(&proxy->queue->proxy_list, &proxy->queue_link);
+	else
+		wl_list_init(&proxy->queue_link);
 
 	return proxy;
 }
@@ -2801,7 +2807,10 @@ wl_proxy_create_wrapper(void *proxy)
 	wrapper->flags = WL_PROXY_FLAG_WRAPPER;
 	wrapper->refcount = 1;
 
-	wl_list_insert(&wrapper->queue->proxy_list, &wrapper->queue_link);
+	if (wrapper->queue != NULL)
+		wl_list_insert(&wrapper->queue->proxy_list, &wrapper->queue_link);
+	else
+		wl_list_init(&wrapper->queue_link);
 
 	pthread_mutex_unlock(&wrapped_proxy->display->mutex);
 
