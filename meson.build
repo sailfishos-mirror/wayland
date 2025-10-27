@@ -9,6 +9,10 @@ project(
 		'c_std=c99',
 	]
 )
+
+fs = import('fs')
+pkgconfig = import('pkgconfig')
+
 wayland_version = meson.project_version().split('.')
 
 config_h = configuration_data()
@@ -105,8 +109,6 @@ configure_file(
 	output: 'config.h',
 	configuration: config_h,
 )
-
-pkgconfig = import('pkgconfig')
 
 wayland_protocol_xml = files('protocol/wayland.xml')
 
