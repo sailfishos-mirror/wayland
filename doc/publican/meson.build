@@ -15,6 +15,7 @@ foreach src : files([
 	'Protocol.xml',
 	'Xwayland.xml',
 	'Compositors.xml',
+	'Content_Updates.xml',
 	'Color.xml',
 	'Client.xml',
 	'Server.xml',

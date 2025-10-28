@@ -10,6 +10,8 @@ foreach src : files([
 	)
 endforeach
 
+subdir('content-updates')
+
 foreach src : files([
 	'wayland-architecture.gv',
 	'x-architecture.gv',
