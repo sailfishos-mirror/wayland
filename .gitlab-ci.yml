@@ -77,11 +77,11 @@ workflow:
 .os-debian:
   variables:
     BUILD_OS: debian
-    FDO_DISTRIBUTION_VERSION: bookworm
+    FDO_DISTRIBUTION_VERSION: trixie
     FDO_DISTRIBUTION_PACKAGES: 'build-essential pkg-config libexpat1-dev libffi-dev libxml2-dev doxygen graphviz xmlto xsltproc docbook-xsl meson ninja-build'
     # bump this tag every time you change something which requires rebuilding the
     # base image
-    FDO_DISTRIBUTION_TAG: "2025-10-28.1"
+    FDO_DISTRIBUTION_TAG: "2025-12-27.0"
 
 .debian-x86_64:
   extends:
