@@ -186,11 +186,13 @@
         - <xsl:value-of select="description/@summary" />
       </xsl:if>
     </title>
-    <para>
-      <variablelist>
-        <xsl:apply-templates select="arg"/>
-      </variablelist>
-    </para>
+    <xsl:if test="arg">
+      <para>
+        <variablelist>
+          <xsl:apply-templates select="arg"/>
+        </variablelist>
+      </para>
+    </xsl:if>
     <xsl:call-template name="break">
       <xsl:with-param name="text" select="description" />
     </xsl:call-template>
