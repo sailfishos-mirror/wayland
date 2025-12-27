@@ -92,8 +92,8 @@ get_socket_name(void)
 	static char retval[64];
 
 	gettimeofday(&tv, NULL);
-	snprintf(retval, sizeof retval, "wayland-test-%d-%ld%ld",
-		 getpid(), tv.tv_sec, tv.tv_usec);
+	snprintf(retval, sizeof retval, "wayland-test-%d-%lld%lld",
+		 (int) getpid(), (long long int) tv.tv_sec, (long long int) tv.tv_usec);
 
 	return retval;
 }
