@@ -25,4 +25,11 @@ foreach src : files([
 		install: true,
 		install_dir: publican_install_prefix + '/html/images',
 	)
+
+	publican_image_maps += custom_target(
+		input + '.map',
+		command: [ dot, '-Tcmapx_np', '-o@OUTPUT@', '@INPUT@' ],
+		input: input,
+		output: fs.stem(src) + '.map',
+	)
 endforeach

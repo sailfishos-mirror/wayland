@@ -4,6 +4,7 @@ merge_mapcoords_xsl = files('xsl/merge-mapcoords.xsl')
 to_publican_xsl = files('xsl/doxygen-to-publican.xsl')
 
 publican_inputs = []
+publican_image_maps = []
 
 foreach src : files([
 	'Wayland.xml', # must be first in publican_inputs
@@ -66,6 +67,9 @@ publican_inputs += custom_target(
 	output: 'ServerAPI.xml'
 )
 
+subdir('html/css')
+subdir('html/images')
+
 foreach src : files([
 	'Architecture.xml',
 	'Introduction.xml'
@@ -76,17 +80,15 @@ foreach src : files([
 		command: [
 			xsltproc,
 			'-o', '@OUTPUT@',
-			'--stringparam', 'basedir', '.',
+			'--stringparam', 'basedir', meson.current_build_dir() / 'html',
 			merge_mapcoords_xsl,
 			'@INPUT@',
 		],
-		input: [name],
+		input: src,
 		output: [name],
+		depends: publican_image_maps,
 	)
 endforeach
-
-subdir('html/css')
-subdir('html/images')
 
 custom_target(
 	'Wayland-docbook-html',
