@@ -101,8 +101,16 @@
 
 <!-- methods -->
 <xsl:template match="memberdef" >
-  <xsl:if test="@kind = 'function' and @static = 'no' and @prot = 'public' or
-                @kind !='function' and normalize-space(briefdescription) != ''">
+  <xsl:if test="(@kind = 'function' and
+                 (@static = 'no' or
+                  substring(location/@bodyfile,
+                            string-length(location/@bodyfile) - 1,
+                            1000) = '.h'
+                 )
+                 and @prot = 'public'
+                )
+                or
+                (@kind != 'function' and normalize-space(briefdescription) != '')">
     <varlistentry id="{$which}-{@id}">
         <term>
           <xsl:value-of select="name"/>
