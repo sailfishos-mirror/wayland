@@ -77,13 +77,11 @@
     </para>
     <figure>
       <title>Xwayland architecture diagram</title>
-      <mediaobjectco>
-	<imageobjectco>
-	  <imageobject>
-	    <imagedata fileref="images/xwayland-architecture.png" format="PNG" />
-	  </imageobject>
-	</imageobjectco>
-      </mediaobjectco>
+      <mediaobject>
+	<imageobject>
+	  <imagedata fileref="images/xwayland-architecture.png" format="PNG" />
+	</imageobject>
+      </mediaobject>
     </figure>
     <para>
       An X11 application connects to Xwayland just like it would connect to any
