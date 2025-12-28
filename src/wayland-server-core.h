@@ -391,7 +391,7 @@ wl_client_set_max_buffer_size(struct wl_client *client, size_t max_buffer_size);
  * object destruction.
  *
  * Clients should create wl_listener objects manually and can register them as
- * listeners to signals using #wl_signal_add, assuming the signal is
+ * listeners to signals using wl_signal_add(), assuming the signal is
  * directly accessible. For opaque structs like wl_event_loop, adding a
  * listener should be done through provided accessor methods. A listener can
  * only listen to one signal at a time.
