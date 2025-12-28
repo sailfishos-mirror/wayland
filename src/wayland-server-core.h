@@ -360,6 +360,7 @@ void
 wl_client_add_resource_created_listener(struct wl_client *client,
                                         struct wl_listener *listener);
 
+/** Callback function type for wl_client_for_each_resource() */
 typedef enum wl_iterator_result (*wl_client_for_each_resource_iterator_func_t)(
 						struct wl_resource *resource,
 						void *user_data);
@@ -430,7 +431,10 @@ wl_client_set_max_buffer_size(struct wl_client *client, size_t max_buffer_size);
  * \sa wl_signal
  */
 struct wl_listener {
+	/** Part of wl_signal::listener_list */
 	struct wl_list link;
+
+	/** Callback function pointer */
 	wl_notify_func_t notify;
 };
 
