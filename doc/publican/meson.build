@@ -19,6 +19,7 @@ foreach src : files([
 	'Color.xml',
 	'Client.xml',
 	'Server.xml',
+	'Message_XML.xml',
 ])
 	name = fs.name(src)
 	publican_inputs += fs.copyfile(name)

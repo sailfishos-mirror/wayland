@@ -1,0 +1,928 @@
+<?xml version='1.0' encoding='utf-8' ?>
+<!DOCTYPE chapter PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN" "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+<!ENTITY % BOOK_ENTITIES SYSTEM "Wayland.ent">
+%BOOK_ENTITIES;
+
+<!ENTITY protocol "<link linkend='sect-MessageXML-tag-protocol'>protocol</link>">
+<!ENTITY copyright "<link linkend='sect-MessageXML-tag-copyright'>copyright</link>">
+<!ENTITY description "<link linkend='sect-MessageXML-tag-description'>description</link>">
+<!ENTITY interface "<link linkend='sect-MessageXML-tag-interface'>interface</link>">
+<!ENTITY enum "<link linkend='sect-MessageXML-tag-enum'>enum</link>">
+<!ENTITY entry "<link linkend='sect-MessageXML-tag-entry'>entry</link>">
+<!ENTITY request "<link linkend='sect-MessageXML-tag-request'>request</link>">
+<!ENTITY event "<link linkend='sect-MessageXML-tag-event'>event</link>">
+<!ENTITY arg "<link linkend='sect-MessageXML-tag-arg'>arg</link>">
+
+<!ENTITY cname-requirements "The name must start with one of the ASCII
+characters a-z, A-Z, or underscore, and the following characters may
+additionally include numbers 0-9.">
+<!ENTITY cname-suffix-requirements "The name must contain only the ASCII
+characters a-z, A-Z, 0-9, or underscore. The name cannot be empty.">
+]>
+
+<chapter id="chap-MessageXML">
+  <title>Message Definition Language</title>
+
+  <section id="sect-MessageXML-preface">
+    <title>Overview</title>
+
+    <para>
+      The fundamentals of the Wayland protocol are explained in
+      <xref linkend="chap-Protocol"/>. This chapter formally defines the
+      language used to define Wayland protocols.
+    </para>
+    <para>
+      Wayland is an object-oriented protocol. Each object follows exactly
+      one interface. An interface is a collection of message and enumeration
+      definitions. A message can be either a request (sent by a client)
+      or an event (sent by a server). A message can have arguments.
+      All arguments are typed.
+    </para>
+  </section>
+
+  <section id="sect-MessageXML-tags">
+    <title>XML Elements</title>
+
+    <section id="sect-MessageXML-tag-protocol">
+      <title>protocol</title>
+
+      <synopsis>protocol ::= (&copyright;?, &description;? &interface;+)</synopsis>
+
+      <para>
+        <code>protocol</code> is the root element in a Wayland protocol XML file.
+        Code generation tools may optionally use the protocol
+        <varname>name</varname> in API symbol names. The XML file name should be
+        similar to the protocol name.
+      </para>
+      <para>
+        The &description; element should be used to document the intended
+        purpose of the protocol, give an overview, and give any development
+        stage notices if applicable.
+      </para>
+      <para>
+        The &copyright; element should be used to indicate the copyrights and
+        the license of the XML file.
+      </para>
+
+      <variablelist>
+        <title>Required attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>name</varname>="<userinput>cname</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The name of the protocol (a.k.a protocol extension).
+              &cname-requirements;
+            </para>
+            <para>
+              The name should be globally unique. Protocols to be included in
+              <ulink url="https://gitlab.freedesktop.org/wayland/wayland-protocols">wayland-protocols</ulink>
+              must follow the naming rules set there. Other protocols should use
+              a unique prefix for the name, e.g. referring to the owning project's
+              name.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="sect-MessageXML-tag-copyright">
+      <title>copyright</title>
+
+      <para>
+        Parent elements: &protocol;
+      </para>
+
+      <synopsis>copyright ::= #PCDATA</synopsis>
+
+      <para>
+        Contains free-form, pre-formatted text for copyright and license
+        notices.
+      </para>
+    </section>
+
+    <section id="sect-MessageXML-tag-description">
+      <title>description</title>
+
+      <para>
+        Parent elements: &protocol;, &interface;, &request;, &event;,
+        &arg;, &enum;, &entry;
+      </para>
+
+      <synopsis>description ::= #PCDATA</synopsis>
+
+      <para>
+        Contains human-readable documentation for its parent element.
+        May contain formatted text, including paragraphs and bulleted
+        lists.
+      </para>
+
+      <variablelist>
+        <title>Optional attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>summary</varname>="<userinput>summary</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              A short (half a line at most) description of the documented
+              element.
+            </para>
+            <para>
+              When a &description; element is used, it is recommended to
+              not use the <varname>summary</varname> attribute of the parent
+              element.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="sect-MessageXML-tag-interface">
+      <title>interface</title>
+
+      <para>
+        Parent elements: &protocol;
+      </para>
+
+      <synopsis>interface ::= (&description;?, (&request;|&event;|&enum;)+)</synopsis>
+
+      <para>
+        An interface element contains the &request;s and &event;s that form the
+        interface. Enumerations can also be defined with &enum; elements.
+        These all belong into the namespace of the interface. Code generation
+        tools may use the interface <varname>name</varname> in API symbol names.
+      </para>
+      <para>
+        Interfaces form an ancestry tree. Aside from
+        <xref linkend="protocol-spec-wl_display" />, new protocol objects are
+        always created through an existing protocol object that may be referred to
+        as <firstterm>the factory object</firstterm>.
+        This can happen in one of two ways: the factory object's interface either
+        defines or does not define the new object's interface.
+      </para>
+      <para>
+        When the factory interface defines the new object's interface, the new
+        object also inherits the factory object's interface version number.
+        This number defines the interface version of the new object.
+        The factory object is referred to as
+        <firstterm>the parent object</firstterm> and the factory interface is
+        referred to as <firstterm>the parent interface</firstterm>. This
+        forms the ancestry tree of interfaces.
+      </para>
+      <para>
+        When the factory interface does not define the new object's interface,
+        both the interface name and the version must be communicated explicitly.
+        The foremost example of this is
+        <xref linkend="protocol-spec-wl_registry-request-bind" />.
+        In this case the terms "parent" or "ancestor" are not used. Interfaces
+        that are advertised through <xref linkend="protocol-spec-wl_registry" />
+        are called <firstterm>global interfaces</firstterm>, or globals for short.
+      </para>
+      <para>
+        If objects having the interface can cause protocol errors, the protocol
+        error codes must be defined within the interface with an &enum;
+        element with its <varname>name</varname> set to <literal>"error"</literal>.
+        Protocol error codes are always specific to the interface of the object
+        referred to in <xref linkend="protocol-spec-wl_display-event-error" />.
+      </para>
+      <para>
+        The &description; element should be used to describe the purpose and
+        the general usage of the interface.
+      </para>
+
+      <variablelist>
+        <title>Required attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>name</varname>="<userinput>cname</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The name of the interface. &cname-requirements;
+              The name must be unique in the &protocol;, and preferably it should
+              also be globally unique to avoid API conflicts in language bindings
+              of multiple protocols.
+            </para>
+            <para>
+              Protocols to be included in
+              <ulink url="https://gitlab.freedesktop.org/wayland/wayland-protocols">wayland-protocols</ulink>
+              must follow the interface naming rules set there. Other protocols
+              should use a unique prefix for the name, e.g. referring to the owning
+              project's name.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>version</varname>="<userinput>V</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The interface's latest version number <userinput>V</userinput> must
+              be an integer greater than zero. An interface element defines
+              all versions of the interface from 1 to <userinput>V</userinput>
+              inclusive. The contents of each interface version are defined in each of
+              the &request;, &event;, &enum; and &entry; elements using the attributes
+              <varname>since</varname> and <varname>deprecated-since</varname>, and
+              in the specification text.
+            </para>
+            <para>
+              When an interface is extended, the version number must be incremented
+              on all the interfaces part of the same interface ancestry tree.
+              The exception to this rule are interfaces which are forever stuck
+              to version 1, which is usually caused by having multiple parent
+              interfaces with independent ancestor global interfaces.
+            </para>
+            <para>
+              A protocol object may have any defined version of the interface.
+              The version of the object is determined at runtime either
+              by inheritance from another protocol object or explicitly.
+            </para>
+            <para>
+              It is possible for a protocol object to have a version higher than
+              defined by its interface. This may happen when the interface is
+              stuck at version 1 as per above. It may also happen when a protocol
+              XML file has not been thoroughly updated as required. In such cases
+              the object shall function as with the highest defined interface
+              version.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="sect-MessageXML-tag-request">
+      <title>request</title>
+
+      <para>
+        Parent elements: &interface;
+      </para>
+
+      <synopsis>request ::= (&description;?, &arg;*)</synopsis>
+
+      <para>
+        Defines a request, a message from a client to a server.
+        Requests are always associated with a specific protocol object.
+      </para>
+      <para>
+        Requests are automatically assigned opcodes in the order they
+        appear inside the &interface; element. Therefore the only
+        backwards-compatible way to add requests to an interface is to
+        add them to the end. Any &event; elements do not interfere
+        with request opcode assignments.
+      </para>
+      <para>
+        The &arg; elements declare the request's arguments.
+        There can be 0 to 20 arguments for a request.
+        The order of &arg; inside the request element defines the order of
+        the arguments on the wire. All declared arguments are mandatory,
+        and extra arguments are not allowed on the wire.
+      </para>
+      <para>
+        The &description; element should be used to document the request.
+      </para>
+
+      <variablelist>
+        <title>Required attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>name</varname>="<userinput>cname</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The name of the request. &cname-requirements;
+              The name must be unique within all requests and &event;s in the
+              containing &interface;.
+            </para>
+            <para>
+              Code and language binding generators may use the name in the API
+              they create. The <varname>name</varname> of the containing
+              &interface; provides the namespace for requests.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <variablelist>
+        <title>Optional attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>type</varname>="<literal>destructor</literal>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              When this attribute is present, the request is a destructor:
+              it shall destroy the protocol object it is sent on. Protocol IPC
+              libraries may use this for bookkeeping protocol object lifetimes.
+            </para>
+            <para>
+              Libwayland-client uses this information to ignore incoming &event;s
+              for destroyed protocol objects. Such events may occur due to a
+              natural race condition between the client destroying a protocol
+              object and the server sending events before processing the
+              destroy request.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>since</varname>="<userinput>S</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              <userinput>S</userinput> must be an integer greater than zero.
+              If <varname>since</varname> is not specified,
+              <code>since="1"</code> is assumed.
+            </para>
+            <para>
+              This request was added in &interface; <varname>version</varname>
+              <userinput>S</userinput>. The request does not exist if the
+              protocol object has a bound version smaller than
+              <userinput>S</userinput>. Attempts to use it in such a case
+              shall raise the protocol error
+              <varname>wl_display.error.invalid_method</varname>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>deprecated-since</varname>="<userinput>D</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              <userinput>D</userinput> must be an integer greater than the
+              value of <varname>since</varname>.
+              If <varname>deprecated-since</varname> is not specified, then
+              the request is not deprecated in any version of the containing
+              &interface;.
+            </para>
+            <para>
+              This request was deprecated in &interface; <varname>version</varname>
+              <userinput>D</userinput> and above, and should not be sent on
+              protocol objects of such version. This is informational.
+              Compositors must still be prepared to handle the
+              request unless specified otherwise.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="sect-MessageXML-tag-event">
+      <title>event</title>
+
+      <para>
+        Parent elements: &interface;
+      </para>
+
+      <synopsis>event ::= (&description;?, &arg;*)</synopsis>
+
+      <para>
+        Defines an event, a message from a server to a client.
+        Events are always associated with a specific protocol object.
+      </para>
+      <para>
+        Events are automatically assigned opcodes in the order they
+        appear inside the &interface; element. Therefore the only
+        backwards-compatible way to add events to an interface is to
+        add them to the end. Any &request; elements do not interfere
+        with event opcode assignments.
+      </para>
+      <para>
+        The &arg; elements declare the event's arguments.
+        There can be 0 to 20 arguments for an event.
+        The order of &arg; inside the event element defines the order of
+        the arguments on the wire. All declared arguments are mandatory,
+        and extra arguments are not allowed on the wire.
+      </para>
+      <para>
+        The &description; element should be used to document the event.
+      </para>
+
+      <variablelist>
+        <title>Required attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>name</varname>="<userinput>cname</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The name of the event. &cname-requirements;
+              The name must be unique within all &request;s and events in the
+              containing &interface;.
+            </para>
+            <para>
+              Code and language binding generators may use the name in the API
+              they create. The <varname>name</varname> of the containing
+              &interface; provides the namespace for events.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <variablelist>
+        <title>Optional attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>type</varname>="<literal>destructor</literal>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              When this attribute is present, the event is a destructor:
+              it shall destroy the protocol object it is sent on. Protocol IPC
+              libraries may use this for bookkeeping protocol object lifetimes.
+            </para>
+            <warning>
+              <para>
+                Destructor events are an underdeveloped feature in Wayland.
+                They can be used only on client-created protocol objects, and
+                it is the protocol designer's responsibility
+                to design such a message exchange that race conditions cannot
+                occur. The main problem would be a client sending a request at the
+                same time as the server is sending a destructor event. The
+                server will consider the protocol object to be already invalid
+                or even recycled when it proceeds to process the request.
+                This often results in protocol errors, but under specific
+                conditions it might also result in silently incorrect behavior.
+              </para>
+              <para>
+                Destructor events should not be used in new protocols.
+                If a destructor event is necessary, the simplest way to avoid
+                these problems is to have the &interface; not contain any
+                &request;s.
+              </para>
+            </warning>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>since</varname>="<userinput>S</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              <userinput>S</userinput> must be an integer greater than zero.
+              If <varname>since</varname> is not specified,
+              <code>since="1"</code> is assumed.
+            </para>
+            <para>
+              This event was added in &interface; <varname>version</varname>
+              <userinput>S</userinput>. The event does not exist if the
+              protocol object has a bound version smaller than
+              <userinput>S</userinput>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>deprecated-since</varname>="<userinput>D</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              <userinput>D</userinput> must be an integer greater than the
+              value of <varname>since</varname>.
+              If <varname>deprecated-since</varname> is not specified, then
+              the event is not deprecated in any version of the containing
+              &interface;.
+            </para>
+            <para>
+              This event was deprecated in &interface; <varname>version</varname>
+              <userinput>D</userinput> and above, and should not be sent on
+              protocol objects of such version. This is informational.
+              Clients must still be prepared to receive this event
+              unless otherwise specified.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="sect-MessageXML-tag-arg">
+      <title>arg</title>
+
+      <para>
+        Parent elements: &request;, &event;
+      </para>
+
+      <synopsis>arg ::= &description;?</synopsis>
+
+      <para>
+        This element declares one argument for the request or the event.
+      </para>
+
+      <variablelist>
+        <title>Required attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>name</varname>="<userinput>cname</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The name of the argument. &cname-requirements;
+              The name must be unique within all the arguments of the parent element.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>type</varname>="<userinput>T</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The type <userinput>T</userinput> of the argument datum must
+              be one of:
+            </para>
+            <variablelist>
+              <varlistentry>
+                <term><literal>int</literal></term>
+                <listitem>
+                  <simpara>32-bit signed integer.</simpara>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><literal>uint</literal></term>
+                <listitem>
+                  <simpara>32-bit unsigned integer.</simpara>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><literal>fixed</literal></term>
+                <listitem>
+                  <simpara>Signed 24.8-bit fixed-point value.</simpara>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><literal>string</literal></term>
+                <listitem>
+                  <simpara>
+                    UTF-8 encoded string value, NUL byte terminated.
+                    Interior NUL bytes are not allowed.
+                  </simpara>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><literal>array</literal></term>
+                <listitem>
+                  <simpara>A byte array of arbitrary data.</simpara>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><literal>fd</literal></term>
+                <listitem>
+                  <simpara>A file descriptor.</simpara>
+                  <simpara>
+                    The file descriptor must be open and valid on send.
+                    It is not possible to pass a null value.
+                  </simpara>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><literal>new_id</literal></term>
+                <listitem>
+                  <simpara>
+                    Creates a new protocol object. A &request; or an &event; may
+                    have at most one <literal>new_id</literal> argument.
+                  </simpara>
+                  <simpara>
+                    If <varname>interface</varname> is specified, the new
+                    protocol object shall have the specified &interface;,
+                    and the new object's (interface) version shall be the
+                    version of the object on which the &request; or &event;
+                    is being sent.
+                  </simpara>
+                  <simpara>
+                    If <varname>interface</varname> is not specified, the
+                    &request; shall implicitly have two additional arguments:
+                    A <literal>string</literal> for an &interface; name, and
+                    a <literal>uint</literal> for the new object's version.
+                    Leaving the interface unspecified is reserved for special use,
+                    <xref linkend="protocol-spec-wl_registry-request-bind" />
+                    for example.
+                  </simpara>
+                  <note>
+                    <simpara>
+                      An &event; argument must always specify the
+                      <literal>new_id</literal> <varname>interface</varname>.
+                    </simpara>
+                  </note>
+                </listitem>
+              </varlistentry>
+              <varlistentry>
+                <term><literal>object</literal></term>
+                <listitem>
+                  <simpara>Reference to an existing protocol object.</simpara>
+                  <simpara>
+                    The attribute <varname>interface</varname> should be
+                    specified. Otherwise IPC libraries cannot enforce the
+                    interface, and checking the interface falls on user code
+                    and specification text.
+                  </simpara>
+                </listitem>
+              </varlistentry>
+            </variablelist>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <variablelist>
+        <title>Optional attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>summary</varname>="<userinput>summary</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              A short (half a line at most) description. This attribute
+              should not be used if a &description; is used.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>interface</varname>="<userinput>iface</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              If given, <userinput>iface</userinput> must be the
+              <varname>name</varname> of some &interface;, and
+              <varname>type</varname> of this argument must be either
+              <literal>"object"</literal> or <literal>"new_id"</literal>.
+              This indicates that the existing or new object must have
+              the interface <userinput>iface</userinput>.
+              Use for other argument types is forbidden.
+            </para>
+            <note>
+              <simpara>
+                If an interface from another protocol is used, then this
+                creates a dependency between the protocols. If an application
+                generates code for one protocol, then it must also generate
+                code for all dependencies. Therefore this would not be a
+                backwards compatible change.
+              </simpara>
+            </note>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>allow-null</varname>="<literal>true</literal>" | "<literal>false</literal>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              Whether the argument value can be null on send.
+              Defaults to <literal>"false"</literal>, meaning it is illegal
+              to send a null value.
+              Can be used only when <varname>type</varname> is
+              <literal>"string"</literal> or <literal>"object"</literal>.
+            </para>
+            <note>
+              <para>
+                Even though this attribute can be used to forbid a compositor
+                from sending a null object as an event argument, an IPC library
+                implementation may not protect the client from receiving a null
+                object. This can happen with libwayland-client when the client
+                has destroyed the protocol object before dispatching an event
+                that referred to it in an argument.
+              </para>
+            </note>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>enum</varname>="<userinput>enum-cname-suffix</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              If specified, indicates that the argument value should come from the
+              &enum; named <userinput>enum-cname-suffix</userinput>. If the
+              enumeration is a bitfield, then <varname>type</varname> must be
+              <literal>"uint"</literal>. Otherwise <varname>type</varname> must
+              be either <literal>"uint"</literal> or <literal>"int"</literal>.
+            </para>
+            <para>
+              The name <userinput>enum-cname-suffix</userinput> refers to an &enum;
+              in the same &interface; by default. If it is necessary to refer to an
+              enumeration from another interface, the interface name can be
+              given with a period:
+              <synopsis><varname>enum</varname>="<userinput>iface</userinput>.<userinput>enum-cname-suffix</userinput>"</synopsis>
+            </para>
+            <note>
+              <para>
+                This attribute alone does not automatically restrict the legal
+                values for this argument.
+                If values from outside of the enumeration need to be forbidden,
+                that must be specified explicitly in the documentation.
+              </para>
+              <para>
+                A common design pattern is to have the server advertise the
+                supported enumeration or bit values with &event;s and
+                explicitly forbid clients from using any other values in
+                requests. This also requires a protocol error code to be
+                specified with the error &enum; to be raised if a client
+                uses an illegal value, see
+                <xref linkend="sect-MessageXML-tag-interface" />.
+              </para>
+            </note>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="sect-MessageXML-tag-enum">
+      <title>enum</title>
+
+      <para>
+        Parent elements: &protocol;
+      </para>
+
+      <synopsis>enum ::= (&description;?, &entry;*)</synopsis>
+
+      <para>
+        This tag defines an enumeration of integer values. Enumerations are
+        merely a syntactic construct to give names to arbitrary integer
+        constants. Each constant is listed as an &entry; with its name.
+        There are two types of enumerations: regular enumerations and bitfields.
+      </para>
+      <para>
+        Regular enumerations do not use <varname>bitfield</varname>
+        attribute, or they set it to <literal>"false"</literal>.
+        The set of pre-defined values that belong to a regular enumeration is
+        exactly the set of values listed as &entry; elements after
+        the protocol object version is taken into account.
+        See the &entry; attributes <varname>since</varname> and
+        <varname>deprecated-since</varname>.
+      </para>
+      <para>
+        Bitfields set <varname>bitfield</varname> to
+        <literal>"true"</literal>. The set of values that belong to a
+        bitfield enumeration are all the values that can be formed by
+        the bitwise-or operator from the set of values listed as &entry;
+        elements like in the regular enumeration. Usually also zero is
+        implicitly included.
+      </para>
+      <para>
+        All the values in a regular enumeration must be either
+        signed or unsigned 32-bit integers. All the values in a
+        bitfield enumeration must be unsigned 32-bit integers.
+      </para>
+
+      <variablelist>
+        <title>Required attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>name</varname>="<userinput>cname-suffix</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The name of the enumeration. &cname-suffix-requirements;
+              The name must be unique within all enumerations in the containing
+              &interface;. The name is used as the namespace for all the
+              contained &entry; elements.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <variablelist>
+        <title>Optional attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>since</varname>="<userinput>S</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              <userinput>S</userinput> must be an integer greater than zero.
+              If <varname>since</varname> is not specified,
+              <code>since="1"</code> is assumed.
+            </para>
+            <para>
+              This enumeration was added in &interface; <varname>version</varname>
+              <userinput>S</userinput>. The enumeration does not exist if the
+              protocol object has a bound version smaller than
+              <userinput>S</userinput>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>bitfield</varname>="<literal>true</literal>" | "<literal>false</literal>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              Specifies if this enumeration is a bitfield.
+              Defaults to <literal>"false"</literal>.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+
+    <section id="sect-MessageXML-tag-entry">
+      <title>entry</title>
+
+      <para>
+        Parent elements: &enum;
+      </para>
+
+      <synopsis>entry ::= &description;?</synopsis>
+
+      <para>
+        Defines a name for an integer constant and makes it part of the
+        set of values of the containing enumeration.
+      </para>
+
+      <variablelist>
+        <title>Required attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>name</varname>="<userinput>cname-suffix</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              The name of a value in an enumeration. &cname-suffix-requirements;
+              The name must be unique within all entry elements in the containing
+              &enum;.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>value</varname>="<userinput>V</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              An integer value.
+              The value can be given in decimal, hexadecimal, or octal
+              representation.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+
+      <variablelist>
+        <title>Optional attributes</title>
+
+        <varlistentry>
+          <term>
+            <synopsis><varname>summary</varname>="<userinput>summary</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              A short (half a line at most) description. This attribute
+              should not be used if a &description; is used.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>since</varname>="<userinput>S</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              <userinput>S</userinput> must be an integer greater than zero.
+              If <varname>since</varname> is not specified,
+              <code>since="1"</code> is assumed.
+            </para>
+            <para>
+              This value was added in &interface; <varname>version</varname>
+              <userinput>S</userinput>.
+            </para>
+          </listitem>
+        </varlistentry>
+        <varlistentry>
+          <term>
+            <synopsis><varname>deprecated-since</varname>="<userinput>D</userinput>"</synopsis>
+          </term>
+          <listitem>
+            <para>
+              <userinput>D</userinput> must be an integer greater than the
+              value of <varname>since</varname>.
+              If <varname>deprecated-since</varname> is not specified, then
+              the value is not deprecated in any version of the containing
+              &interface;.
+            </para>
+            <para>
+              This value was removed in &interface; <varname>version</varname>
+              <userinput>D</userinput>. This does not make the value
+              automatically illegal to use, see
+              <xref linkend="sect-MessageXML-tag-arg" /> attribute
+              <varname>enum</varname>.
+            </para>
+          </listitem>
+        </varlistentry>
+      </variablelist>
+    </section>
+  </section>
+</chapter>
