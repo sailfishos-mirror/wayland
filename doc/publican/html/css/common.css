@@ -860,7 +860,7 @@ code {
 	font-family:"liberation mono", "bitstream vera mono", "dejavu mono", monospace;
 	white-space: pre-wrap;
 	word-wrap: break-word;
-	font-weight:bold;
+	font-weight: normal;
 }
 
 .parameter code {
@@ -876,6 +876,14 @@ code.email {
 	font-weight: normal;
 	font-family: "liberation sans", "Myriad ", "Bitstream Vera Sans", "Lucida Grande", "Luxi Sans", "Trebuchet MS", helvetica, verdana, arial, sans-serif;
 
+}
+
+.synopsis {
+	font-weight: normal;
+}
+
+.userinput {
+	font-style: italic;
 }
 
 /*Notifications*/
