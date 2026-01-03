@@ -713,6 +713,7 @@ struct wl_protocol_logger_message {
 	const union wl_argument *arguments;
 };
 
+/** Callback function type for wl_display_add_protocol_logger() */
 typedef void (*wl_protocol_logger_func_t)(void *user_data,
 					  enum wl_protocol_logger_type direction,
 					  const struct wl_protocol_logger_message *message);
