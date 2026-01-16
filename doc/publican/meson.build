@@ -12,7 +12,6 @@ foreach src : files([
 	'Book_Info.xml',
 	'Author_Group.xml',
 	'Foreword.xml',
-	'Revision_History.xml',
 	'Protocol.xml',
 	'Xwayland.xml',
 	'Compositors.xml',
