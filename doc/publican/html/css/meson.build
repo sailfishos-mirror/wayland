@@ -1,9 +1,6 @@
 foreach src : files([
-	'brand.css',
 	'common.css',
 	'default.css',
-	'epub.css',
-	'print.css',
 ])
 	name = fs.name(src)
 	publican_inputs += fs.copyfile(
