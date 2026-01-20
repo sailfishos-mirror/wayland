@@ -204,7 +204,6 @@ div.producttitle {
 	margin-bottom: 20px;
 	font-size: 48px;
 	font-weight: bold;
-/* 	background: #003d6e url(../images/h1-bg.png) top left repeat-x; */
 	color:  #336699;
 	text-align: center;
 	padding-top: 12px;
@@ -642,13 +641,11 @@ div.authorgroup.contrib {
 
 /*Lists*/
 ul {
-    list-style-image: url("../images/dot.png");
     list-style-type: circle;
     padding-left: 1.6em;
 }
 
 ul ul {
-    list-style-image: url("../images/dot2.png");
     list-style-type: circle;
 }
 
@@ -882,21 +879,6 @@ code.email {
 }
 
 /*Notifications*/
-div.warning:before {
-	content:url(../images/warning.png);
-	padding-left: 5px;
-}
-
-div.note:before {
-	content:url(../images/note.png);
-	padding-left: 5px;
-}
-
-div.important:before {
-	content:url(../images/important.png);
-	padding-left: 5px;
-}
-
 div.warning, div.note, div.important {
 	color: black;
 	margin: 0px;
@@ -932,21 +914,18 @@ div.admonition_header {
 }
 
 div.warning div.admonition_header {
-	background: url(../images/red.png) top left repeat-x;
 	background-color: #590000;
 	background: -webkit-linear-gradient(#a40000,#590000);
 	background: linear-gradient(#a40000,#590000);
 }
 
 div.note div.admonition_header {
-	background: url(../images/green.png) top right repeat-x;
 	background-color: #597800;
 	background: -webkit-linear-gradient(#769f00,#597800);
 	background: linear-gradient(#769f00,#597800);
 }
 
 div.important div.admonition_header {
-	background: url(../images/yellow.png) top right repeat-x;
 	background-color: #a6710f;
 	background: -webkit-linear-gradient(#d08e13,#a6710f);
 	background: linear-gradient(#d08e13,#a6710f);
@@ -1436,14 +1415,12 @@ ul li p:last-child, ul li para:last-child {
 }
 
 .docnav li.next a strong {
-	background:  url(../images/stock-go-forward.png) right 120% no-repeat;
 	padding-top:3px;
 	padding-bottom:4px;
 	padding-right:28px;
 }
 
 .docnav li.previous a strong {
-	background: url(../images/stock-go-back.png) left 120% no-repeat;
 	padding-top:3px;
 	padding-bottom:4px;
 	padding-left:28px;
@@ -1451,13 +1428,11 @@ ul li p:last-child, ul li para:last-child {
 }
 
 .docnav li.home a strong {
-	background: url(../images/stock-home.png) top left no-repeat;
 	padding:5px;
 	padding-left:28px;
 }
 
 .docnav li.up a strong {
-	background: url(../images/stock-go-up.png) top left no-repeat;
 	padding:5px;
 	padding-left:28px;
 }
@@ -1538,7 +1513,6 @@ ul.docnav {
 	display:inline;
 	float:right;
 	width:16em;
-	background:#c00 url(../images/shine.png) top left repeat-x;
 	margin:0px;
 	margin-top:-1.3em;
 	padding:0px;
@@ -1556,7 +1530,6 @@ div.progress {
 	display:block;
 	float:left;
 	width:16em;
-	background:#c00 url(../images/shine.png) top left repeat-x;
 	height:1em;
 }
 
@@ -1566,11 +1539,11 @@ div.progress span {
 }
 
 div.progress span.translated {
-	background:#6c3 url(../images/shine.png) top left repeat-x;
+	background:#6c3;
 }
 
 div.progress span.fuzzy {
-	background:#ff9f00 url(../images/shine.png) top left repeat-x;
+	background:#ff9f00;
 }
 
 
@@ -1626,7 +1599,7 @@ div.progress span.fuzzy {
 	display:inline;
 	float:right;
 	width:16em;
-	background:#c00 url(../images/shine.png) top left repeat-x;
+	background:#c00;
 	margin:0px;
 	margin-top:-1.3em;
 	padding:0px;
@@ -1674,7 +1647,7 @@ span.remark {
 }
 
 .draft {
-	background-image: url(../images/watermark-draft.png);
+	background-color: #aaa;
 	background-repeat: repeat-y;
         background-position: center;
 }
