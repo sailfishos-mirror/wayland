@@ -3078,7 +3078,7 @@
     </event>
   </interface>
 
-  <interface name="wl_region" version="1">
+  <interface name="wl_region" version="6">
     <description summary="region interface">
       A region object describes an area.
 
