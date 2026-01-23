@@ -546,7 +546,7 @@
     </event>
   </interface>
 
-  <interface name="wl_data_offer" version="3">
+  <interface name="wl_data_offer" version="4">
     <description summary="offer to transfer data">
       A wl_data_offer represents a piece of data offered for transfer
       by another client (the source client).  It is used by the
@@ -739,7 +739,7 @@
     </event>
   </interface>
 
-  <interface name="wl_data_source" version="3">
+  <interface name="wl_data_source" version="4">
     <description summary="offer to transfer data">
       The wl_data_source object is the source side of a wl_data_offer.
       It is created by the source client in a data transfer and
@@ -894,7 +894,7 @@
     </event>
   </interface>
 
-  <interface name="wl_data_device" version="3">
+  <interface name="wl_data_device" version="4">
     <description summary="data transfer device">
       There is one wl_data_device per seat which can be obtained
       from the global wl_data_device_manager singleton.
@@ -1055,7 +1055,7 @@
     </request>
   </interface>
 
-  <interface name="wl_data_device_manager" version="3">
+  <interface name="wl_data_device_manager" version="4">
     <description summary="data transfer interface">
       The wl_data_device_manager is a singleton global object that
       provides access to inter-client data transfer mechanisms such as
@@ -1117,6 +1117,15 @@
       <entry name="move" value="2" summary="move action"/>
       <entry name="ask" value="4" summary="ask action"/>
     </enum>
+
+    <!-- Version 4 additions -->
+
+    <request name="release" type="destructor" since="4">
+      <description summary="destroy wl_data_device_manager">
+        This request destroys the wl_data_device_manager. This has no effect on any other
+        objects.
+      </description>
+    </request>
   </interface>
 
   <interface name="wl_shell" version="1">
