@@ -210,6 +210,14 @@
       </description>
       <arg name="id" type="new_id" interface="wl_region" summary="the new region"/>
     </request>
+
+    <!-- Version 7 additions -->
+
+    <request name="release" type="destructor" since="7">
+      <description summary="destroy wl_compositor">
+        This request destroys the wl_compositor. This has no effect on any other objects.
+      </description>
+    </request>
   </interface>
 
   <interface name="wl_shm_pool" version="2">
@@ -3078,7 +3086,7 @@
     </event>
   </interface>
 
-  <interface name="wl_region" version="6">
+  <interface name="wl_region" version="7">
     <description summary="region interface">
       A region object describes an area.
 
