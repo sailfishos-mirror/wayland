@@ -159,7 +159,7 @@ armv7-debian-container_prep:
 # Core build environment.
 .build-env:
   variables:
-    MESON_BUILD_TYPE: "-Dbuildtype=debug -Doptimization=0 -Db_sanitize=address,undefined"
+    MESON_BUILD_TYPE: "-Dbuildtype=debug -Doptimization=0 -Db_sanitize=address,undefined -Ddocbook_validation=true"
     # See https://gitlab.freedesktop.org/wayland/wayland/-/merge_requests/154
     ASAN_OPTIONS: "detect_odr_violation=0"
   before_script:

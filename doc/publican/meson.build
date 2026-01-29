@@ -94,11 +94,16 @@ foreach src : files([
 	)
 endforeach
 
+skip_validation = '--skip-validation'
+if get_option('docbook_validation')
+	skip_validation = []
+endif
+
 custom_target(
 	'Wayland-docbook-html',
 	command: [
 		xmlto,
-		'--skip-validation',
+		skip_validation,
 		'--stringparam', 'chunker.output.encoding=UTF-8',
 		'--stringparam', 'chunk.section.depth=0',
 		'--stringparam', 'toc.section.depth=1',
