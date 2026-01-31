@@ -9,8 +9,7 @@
   <title>Preface</title>
 
   <para>
-  This document describes the (i) Wayland architecture, (ii) Wayland model of
-  operation and (iii) its library API. Also, the Wayland protocol specification is shown
+  This document describes its library API. Also, the Wayland protocol specification is shown
   in the Appendix. This document is aimed primarily at Wayland developers and
   those looking to program with it; it does not cover application development.
   </para>
