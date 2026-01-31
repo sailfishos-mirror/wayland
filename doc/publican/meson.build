@@ -12,14 +12,8 @@ foreach src : files([
 	'Book_Info.xml',
 	'Author_Group.xml',
 	'Foreword.xml',
-	'Protocol.xml',
-	'Xwayland.xml',
-	'Compositors.xml',
-	'Content_Updates.xml',
-	'Color.xml',
 	'Client.xml',
 	'Server.xml',
-	'Message_XML.xml',
 ])
 	name = fs.name(src)
 	publican_inputs += fs.copyfile(name)
@@ -72,27 +66,6 @@ publican_inputs += custom_target(
 )
 
 subdir('html/css')
-subdir('html/images')
-
-foreach src : files([
-	'Architecture.xml',
-	'Introduction.xml'
-])
-	name = fs.name(src)
-	publican_inputs += custom_target(
-		name,
-		command: [
-			xsltproc,
-			'-o', '@OUTPUT@',
-			'--stringparam', 'basedir', meson.current_build_dir() / 'html',
-			merge_mapcoords_xsl,
-			'@INPUT@',
-		],
-		input: src,
-		output: [name],
-		depends: publican_image_maps,
-	)
-endforeach
 
 skip_validation = '--skip-validation'
 if get_option('docbook_validation')
