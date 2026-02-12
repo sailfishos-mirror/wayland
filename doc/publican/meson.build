@@ -66,6 +66,7 @@ publican_inputs += custom_target(
 )
 
 subdir('html/css')
+subdir('html/images')
 
 skip_validation = '--skip-validation'
 if get_option('docbook_validation')
