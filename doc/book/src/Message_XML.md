@@ -33,7 +33,9 @@ of the XML file.
 **Required attributes**
 
 `name`="`cname`"
-  : The name of the protocol (a.k.a protocol extension). cname-requirements
+  : The name of the protocol (a.k.a protocol extension). The name must start
+    with one of the ASCII characters a-z, A-Z, or underscore, and the following
+    characters may additionally include numbers 0-9.
 
     The name should be globally unique. Protocols to be included in
     [wayland-protocols](https://gitlab.freedesktop.org/wayland/wayland-protocols)
@@ -116,7 +118,9 @@ usage of the interface.
 **Required attributes**
 
 `name`="`cname`"
-  : The name of the interface. cname-requirements The name must be unique in the
+  : The name of the interface. The name must start with one of the ASCII
+    characters a-z, A-Z, or underscore, and the following characters may
+    additionally include numbers 0-9. The name must be unique in the
     protocol, and preferably it should also be globally unique to avoid API
     conflicts in language bindings of multiple protocols.
 
@@ -174,7 +178,9 @@ The description element should be used to document the request.
 **Required attributes**
 
 `name`="`cname`"
-  : The name of the request. cname-requirements The name must be unique within
+  : The name of the request. The name must start with one of the ASCII
+    characters a-z, A-Z, or underscore, and the following characters may
+    additionally include numbers 0-9. The name must be unique within
     all requests and events in the containing interface.
 
     Code and language binding generators may use the name in the API they
@@ -238,8 +244,10 @@ The description element should be used to document the event.
 **Required attributes**
 
 `name`="`cname`"
-  : The name of the event. cname-requirements The name must be unique within all
-    requests and events in the containing interface.
+  : The name of the event. The name must start with one of the ASCII characters
+    a-z, A-Z, or underscore, and the following characters may additionally
+    include numbers 0-9. The name must be unique within all requests and events
+    in the containing interface.
 
     Code and language binding generators may use the name in the API they
     create. The `name` of the containing interface provides the namespace for
@@ -297,7 +305,9 @@ This element declares one argument for the request or the event.
 **Required attributes**
 
 `name`="`cname`"
-  : The name of the argument. cname-requirements The name must be unique within
+  : The name of the argument. The name must start with one of the ASCII
+    characters a-z, A-Z, or underscore, and the following characters may
+    additionally include numbers 0-9. The name must be unique within
     all the arguments of the parent element.
 
 `type`="`T`"
@@ -435,7 +445,8 @@ integers.
 **Required attributes**
 
 `name`="`cname-suffix`"
-  : The name of the enumeration. cname-suffix-requirements The name must be
+  : The name of the enumeration. The name must contain only the ASCII characters
+    a-z, A-Z, 0-9, or underscore. The name cannot be empty. The name must be
     unique within all enumerations in the containing interface. The name is used
     as the namespace for all the contained entry elements.
 
@@ -465,7 +476,8 @@ the containing enumeration.
 **Required attributes**
 
 `name`="`cname-suffix`"
-  : The name of a value in an enumeration. cname-suffix-requirements The name
+  : The name of a value in an enumeration. The name must contain only the ASCII
+    characters a-z, A-Z, 0-9, or underscore. The name cannot be empty. The name
     must be unique within all entry elements in the containing enum.
 
 `value`="`V`"
