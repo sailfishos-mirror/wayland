@@ -140,7 +140,8 @@ usage of the interface.
     the interfaces part of the same interface ancestry tree. The exception to
     this rule are interfaces which are forever stuck to version 1, which is
     usually caused by having multiple parent interfaces with independent
-    ancestor global interfaces.
+    ancestor global interfaces. In this case, the `frozen="true"` attribute
+    described below should be used.
 
     A protocol object may have any defined version of the interface. The version
     of the object is determined at runtime either by inheritance from another
@@ -151,6 +152,15 @@ usage of the interface.
     as per above. It may also happen when a protocol XML file has not been
     thoroughly updated as required. In such cases the object shall function as
     with the highest defined interface version.
+
+**Optional attributes**
+
+`frozen`="`true`"
+  : The interface is frozen and forever stuck at version 1.
+
+    This attribute should be applied to interfaces that have multiple parent
+    interfaces with independent ancestor global interfaces, for example
+    `wl_buffer` and `wl_callback`.
 
 ### request
 
