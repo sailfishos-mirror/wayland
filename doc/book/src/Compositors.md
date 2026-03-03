@@ -66,7 +66,7 @@ Another option is to use a nested Wayland instance. For this, the Wayland server
 will have to be a library that the host application links to. The host
 application will then pass the Wayland server socket name to the embedded
 application, and will need to implement the Wayland compositor interface. The
-host application composites the client surfaces as part of it's window, that is,
+host application composites the client surfaces as part of its window, that is,
 in the web page or in the panel. The benefit of nesting the Wayland server is
 that it provides the requests the embedded client needs to inform the host about
 buffer updates and a mechanism for forwarding input events from the host

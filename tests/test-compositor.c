@@ -517,7 +517,7 @@ struct client *client_connect(void)
 	assert(c->wl_display && "Failed connecting to display");
 
 	/* create test_compositor proxy. Do it with temporary
-	 * registry so that client can define it's own listener later */
+	 * registry so that client can define its own listener later */
 	reg = wl_display_get_registry(c->wl_display);
 	assert(reg);
 	wl_registry_add_listener(reg, &registry_listener, c);

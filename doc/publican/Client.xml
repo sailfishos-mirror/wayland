@@ -25,7 +25,7 @@
     are received from the server until they can be
     processed. Multi-threading is supported by creating an additional
     wl_event_queue for each additional thread, each object can have
-    it's events placed in a particular queue, so potentially a
+    its events placed in a particular queue, so potentially a
     different thread could be made to handle the events for each
     object created.
   </para>
