@@ -1054,10 +1054,10 @@ registry_bind(struct wl_client *client,
 		if (global->name == name)
 			break;
 
-	if (&global->link == &display->global_list)
+	if (&global->link == &display->global_list || !wl_global_is_visible(client, global))
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid global %s (%d)", interface, name);
+				       "global %s (%"PRIu32") is unavailable", interface, name);
 	else if (strcmp(global->interface->name, interface) != 0)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
@@ -1074,10 +1074,6 @@ registry_bind(struct wl_client *client,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
 				       "invalid version for global %s (%d): have %d, wanted %d",
 				       interface, name, global->version, version);
-	else if (!wl_global_is_visible(client, global))
-		wl_resource_post_error(resource,
-				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid global %s (%d)", interface, name);
 	else
 		global->bind(client, global->data, version, id);
 }
