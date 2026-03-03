@@ -1061,18 +1061,17 @@ registry_bind(struct wl_client *client,
 	else if (strcmp(global->interface->name, interface) != 0)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid interface for global %u: "
-				       "have %s, wanted %s",
-				       name, interface, global->interface->name);
+				       "invalid interface for global %"PRIu32": expected %s, got %s",
+				       name, global->interface->name, interface);
 	else if (version == 0)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid version for global %s (%d): 0 is not a valid version",
+				       "invalid version for global %s (%"PRIu32"): 0 is not a valid version",
 				       interface, name);
 	else if (global->version < version)
 		wl_resource_post_error(resource,
 				       WL_DISPLAY_ERROR_INVALID_OBJECT,
-				       "invalid version for global %s (%d): have %d, wanted %d",
+				       "invalid version for global %s (%"PRIu32"): expected at most %d, got %d",
 				       interface, name, global->version, version);
 	else
 		global->bind(client, global->data, version, id);
