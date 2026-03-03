@@ -450,11 +450,11 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		    resource->version > 0 && resource->version < since) {
 			wl_resource_post_error(client->display_resource,
 					       WL_DISPLAY_ERROR_INVALID_METHOD,
-					       "invalid method %d (since %d < %d)"
-					       ", object %s#%u",
-					       opcode, resource->version, since,
+					       "invalid version for %s#%u.%s (%d, need at least %d)",
 					       object->interface->name,
-					       object->id);
+					       object->id,
+					       message->name,
+					       resource->version, since);
 			break;
 		}
 
