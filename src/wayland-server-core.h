@@ -222,9 +222,12 @@ wl_display_set_default_max_buffer_size(struct wl_display *display,
 				       size_t max_buffer_size);
 
 struct wl_client;
+struct wl_global;
 
 typedef void (*wl_global_bind_func_t)(struct wl_client *client, void *data,
 				      uint32_t version, uint32_t id);
+
+typedef void (*wl_global_withdrawn_func_t)(struct wl_global *global);
 
 uint32_t
 wl_display_get_serial(const struct wl_display *display);
@@ -252,6 +255,10 @@ wl_global_create(struct wl_display *display,
 
 void
 wl_global_remove(struct wl_global *global);
+
+void
+wl_global_set_withdrawn_listener(struct wl_global *global,
+				 wl_global_withdrawn_func_t func);
 
 void
 wl_global_destroy(struct wl_global *global);
@@ -724,6 +731,11 @@ wl_display_add_protocol_logger(struct wl_display *display,
 
 void
 wl_protocol_logger_destroy(struct wl_protocol_logger *logger);
+
+void
+wl_fixes_handle_ack_global_remove(struct wl_resource *fixes_resource,
+				  struct wl_resource *registry_resource,
+				  uint32_t global_name);
 
 #ifdef  __cplusplus
 }
