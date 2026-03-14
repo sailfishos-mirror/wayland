@@ -130,7 +130,7 @@ struct wl_global {
 	wl_global_bind_func_t bind;
 	wl_global_withdrawn_func_t withdrawn;
 	struct wl_list link;
-	bool removed;
+	bool unpublished;
 };
 
 struct wl_global_offer {
@@ -1115,8 +1115,8 @@ display_sync(struct wl_client *client,
 }
 
 static void
-wl_global_announce(struct wl_global *global,
-		   struct wl_resource *registry_resource)
+wl_global_publish(struct wl_global *global,
+		  struct wl_resource *registry_resource)
 {
 	struct wl_global_offer *offer;
 	struct wl_registry *registry = registry_resource->data;
@@ -1154,7 +1154,7 @@ wl_global_offer_done(struct wl_global_offer *offer)
 
 	wl_global_offer_destroy(offer);
 
-	if (global->removed && global->withdrawn && wl_list_empty(&global->offer_list))
+	if (global->unpublished && global->withdrawn && wl_list_empty(&global->offer_list))
 		global->withdrawn(global);
 }
 
@@ -1220,8 +1220,8 @@ display_get_registry(struct wl_client *client,
 		       &registry_resource->link);
 
 	wl_list_for_each(global, &display->global_list, link)
-		if (wl_global_is_visible(client, global) && !global->removed)
-			wl_global_announce(global, registry_resource);
+		if (wl_global_is_visible(client, global) && !global->unpublished)
+			wl_global_publish(global, registry_resource);
 }
 
 static const struct wl_display_interface display_interface = {
@@ -1488,29 +1488,27 @@ wl_global_create(struct wl_display *display,
 	global->data = data;
 	global->bind = bind;
 	global->withdrawn = NULL;
-	global->removed = false;
+	global->unpublished = false;
 	wl_list_insert(display->global_list.prev, &global->link);
 	wl_list_init(&global->offer_list);
 
 	wl_list_for_each(resource, &display->registry_resource_list, link)
 		if (wl_global_is_visible(resource->client, global))
-			wl_global_announce(global, resource);
+			wl_global_publish(global, resource);
 
 	return global;
 }
 
 static void
-wl_global_send_removed(struct wl_global *global)
+wl_global_unpublish(struct wl_global *global)
 {
-	struct wl_display *display = global->display;
-	struct wl_resource *resource;
+	struct wl_global_offer *offer;
 
-	wl_list_for_each(resource, &display->registry_resource_list, link)
-		if (wl_global_is_visible(resource->client, global))
-			wl_resource_post_event(resource, WL_REGISTRY_GLOBAL_REMOVE,
-					       global->name);
+	wl_list_for_each(offer, &global->offer_list, global_link)
+		wl_resource_post_event(offer->registry_resource,
+				       WL_REGISTRY_GLOBAL_REMOVE, global->name);
 
-	global->removed = true;
+	global->unpublished = true;
 }
 
 /** Remove the global
@@ -1554,12 +1552,12 @@ wl_global_send_removed(struct wl_global *global)
 WL_EXPORT void
 wl_global_remove(struct wl_global *global)
 {
-	if (global->removed)
+	if (global->unpublished)
 		wl_abort("wl_global_remove: called twice on the same "
 			 "global '%s#%"PRIu32"'", global->interface->name,
 			 global->name);
 
-	wl_global_send_removed(global);
+	wl_global_unpublish(global);
 
 	if (global->withdrawn && wl_list_empty(&global->offer_list))
 		global->withdrawn(global);
@@ -1597,8 +1595,8 @@ wl_global_destroy(struct wl_global *global)
 {
 	struct wl_global_offer *offer;
 
-	if (!global->removed)
-		wl_global_send_removed(global);
+	if (!global->unpublished)
+		wl_global_unpublish(global);
 
 	wl_list_remove(&global->link);
 
@@ -2889,7 +2887,7 @@ wl_fixes_handle_ack_global_remove(struct wl_resource *fixes_resource,
 		return;
 	}
 
-	if (!offer->global->removed) {
+	if (!offer->global->unpublished) {
 		wl_resource_post_error(fixes_resource, WL_FIXES_ERROR_INVALID_ACK_REMOVE,
 				       "global %u is not removed", global_name);
 		return;
