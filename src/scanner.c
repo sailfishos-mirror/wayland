@@ -1224,7 +1224,6 @@ emit_stubs(struct wl_list *message_list, struct interface *interface)
 		     "interface '%s' has method named destroy "
 		     "but no destructor",
 		     interface->name);
-		exit(EXIT_FAILURE);
 	}
 
 	if (!has_destroy && strcmp(interface->name, "wl_display") != 0) {
