@@ -189,7 +189,6 @@ struct message {
 	char *uppercase_name;
 	struct wl_list arg_list;
 	struct wl_list link;
-	int arg_count;
 	int new_id_count;
 	int type_index;
 	int all_null;
@@ -890,7 +889,6 @@ start_element(void *data, const char *element_name, const char **atts)
 			arg->summary = xstrdup(summary);
 
 		wl_list_insert(ctx->message->arg_list.prev, &arg->link);
-		ctx->message->arg_count++;
 	} else if (strcmp(element_name, "enum") == 0) {
 		if (name == NULL)
 			fail(&ctx->loc, "no enum name given");
