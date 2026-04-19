@@ -46,6 +46,7 @@ have_funcs = [
 	'accept4',
 	'mkostemp',
 	'posix_fallocate',
+	'ppoll',
 	'prctl',
 	'memfd_create',
 	'mremap',
