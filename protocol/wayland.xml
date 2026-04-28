@@ -889,7 +889,7 @@
         The most recent action received is always the valid one. The chosen
         action may change alongside negotiation (e.g. an "ask" action can turn
         into a "move" operation), so the effects of the final action must
-        always be applied in wl_data_offer.dnd_finished.
+        always be applied in wl_data_source.dnd_finished.
 
         Clients can trigger cursor surface changes from this point, so
         they reflect the current action.
