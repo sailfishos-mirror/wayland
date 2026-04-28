@@ -140,7 +140,7 @@
         specified name as the identifier.
       </description>
       <arg name="name" type="uint" summary="unique numeric name of the object"/>
-      <arg name="id" type="new_id" summary="bounded object"/>
+      <arg name="id" type="new_id" summary="bound object"/>
     </request>
 
     <event name="global">
