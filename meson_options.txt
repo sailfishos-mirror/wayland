@@ -22,6 +22,10 @@ option('dtd_validation',
   description: 'Validate the protocol DTD (requires libxml2)',
   type: 'boolean',
   value: true)
+option('book',
+  description: 'Build the Wayland Book (requires mdbook)',
+  type: 'boolean',
+  value: true)
 option('icon_directory',
   description: 'Location used to look for cursors (defaults to ${datadir}/icons if unset)',
   type: 'string',

@@ -6,7 +6,7 @@ dot = find_program('dot')
 doxygen = find_program('doxygen')
 xsltproc = find_program('xsltproc')
 xmlto = find_program('xmlto')
-mdbook = find_program('mdbook')
+mdbook = find_program('mdbook', required: get_option('book'))
 
 cmd = run_command(doxygen, '--version', check: true)
 message('doxygen: ' + cmd.stdout().strip())
@@ -40,4 +40,6 @@ publican_html_dir = 'html'
 
 subdir('doxygen')
 subdir('publican')
-subdir('book')
+if mdbook.found()
+	subdir('book')
+endif
