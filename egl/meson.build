@@ -56,6 +56,4 @@ wayland_egl_dep = declare_dependency(
 	include_directories: [ root_inc, include_directories('.') ],
 )
 
-if meson.version().version_compare('>= 0.54.0')
-	meson.override_dependency('wayland-egl', wayland_egl_dep)
-endif
+meson.override_dependency('wayland-egl', wayland_egl_dep)
