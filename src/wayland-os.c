@@ -85,7 +85,7 @@ wl_os_socket_cloexec(int domain, int type, int protocol)
 	return set_cloexec_or_close(fd);
 }
 
-#if defined(__FreeBSD__)
+#if defined(LOCAL_PEERCRED)
 int
 wl_os_socket_peercred(int sockfd, uid_t *uid, gid_t *gid, pid_t *pid)
 {
