@@ -23,7 +23,6 @@
  * SOFTWARE.
  */
 
-#define _GNU_SOURCE /* For memrchr */
 #include <stdlib.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -333,19 +332,13 @@ map_file(int fd, size_t *len)
 static char *
 last_line_of(char *s)
 {
-	size_t len = strlen(s);
-	char *last;
+	char *last = s;
+	char *nl;
 
-	last = memrchr(s, '\n', len);
-	/* If we found a newline at end of string, find the previous one. */
-	if (last && last[1] == 0)
-		last = memrchr(s, '\n', len - 1);
-	/* If we have a newline, the last line starts after the newline.
-	 * Otherwise, the whole string is the last line. */
-	if (last)
-		last += 1;
-	else
-		last = s;
+	/* Walk forward over the newlines, remembering the start of each line
+	 * that has content, so that a trailing newline is ignored. */
+	while ((nl = strchr(last, '\n')) != NULL && nl[1] != '\0')
+		last = nl + 1;
 
 	return last;
 }
