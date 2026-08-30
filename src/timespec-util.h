@@ -31,6 +31,7 @@
 #include <time.h>
 #include <stdbool.h>
 
+#define NSEC_PER_MSEC 1000000
 #define NSEC_PER_SEC 1000000000
 
 /* Subtract timespecs
@@ -81,7 +82,7 @@ timespec_add_nsec(struct timespec *r, const struct timespec *a, int64_t b)
 static inline void
 timespec_add_msec(struct timespec *r, const struct timespec *a, int64_t b)
 {
-	timespec_add_nsec(r, a, b * 1000000);
+	timespec_add_nsec(r, a, b * NSEC_PER_MSEC);
 }
 
 /* Convert timespec to nanoseconds
@@ -119,7 +120,7 @@ timespec_sub_to_nsec(const struct timespec *a, const struct timespec *b)
 static inline int64_t
 timespec_to_msec(const struct timespec *a)
 {
-	return (int64_t)a->tv_sec * 1000 + a->tv_nsec / 1000000;
+	return (int64_t)a->tv_sec * 1000 + a->tv_nsec / NSEC_PER_MSEC;
 }
 
 /* Subtract timespecs and return result in milliseconds
@@ -131,7 +132,7 @@ timespec_to_msec(const struct timespec *a)
 static inline int64_t
 timespec_sub_to_msec(const struct timespec *a, const struct timespec *b)
 {
-	return timespec_sub_to_nsec(a, b) / 1000000;
+	return timespec_sub_to_nsec(a, b) / NSEC_PER_MSEC;
 }
 
 /* Convert timespec to microseconds
@@ -202,7 +203,7 @@ timespec_from_usec(struct timespec *a, int64_t b)
 static inline void
 timespec_from_msec(struct timespec *a, int64_t b)
 {
-	timespec_from_nsec(a, b * 1000000);
+	timespec_from_nsec(a, b * NSEC_PER_MSEC);
 }
 
 /* Convert protocol data to timespec
